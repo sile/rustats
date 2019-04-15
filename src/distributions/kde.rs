@@ -1,5 +1,5 @@
 use self::kernels::Kernel;
-use self::selectors::SelectBandwidth;
+use self::selectors::{SelectBandwidth, SilvermanRot};
 use crate::distributions::{Pdf, StdNormal};
 use crate::matrix::Matrix2;
 use std::ops::Sub;
@@ -15,7 +15,7 @@ impl Point for (f64, f64) {
 }
 
 #[derive(Debug)]
-pub struct KernelDensityEstimator<P, S, K = StdNormal> {
+pub struct KernelDensityEstimator<P, S = SilvermanRot, K = StdNormal> {
     kernel: K,
     selector: S,
     points: Vec<P>,
@@ -24,7 +24,7 @@ impl<P, S, K> Pdf<P> for KernelDensityEstimator<P, S, K>
 where
     P: Point + Sub<Output = P> + Clone,
     S: SelectBandwidth<P>,
-    K: Kernel<P::Output>,
+    K: Kernel<P>,
 {
     fn pdf(&self, x: &P) -> f64 {
         let bandwidth = self.selector.select_bandwidth(&self.points);
