@@ -1,5 +1,5 @@
+use super::Point;
 use crate::matrix::Matrix2;
-use crate::Point;
 
 pub trait SelectBandwidth<P: Point> {
     fn select_bandwidth(&self, points: &[P]) -> P::Bandwidth;

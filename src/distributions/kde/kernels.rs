@@ -1,5 +1,6 @@
+use crate::distributions::kde::Point;
+use crate::distributions::Pdf;
 use crate::matrix::{Matrix2, Transpose};
-use crate::{Pdf, Point};
 use std::f64::consts::PI;
 
 pub trait Kernel<P: Point> {
