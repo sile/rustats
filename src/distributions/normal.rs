@@ -1,7 +1,7 @@
 use super::Pdf;
 use std::f64::consts::PI;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Default, Clone, Copy)]
 pub struct StdNormal;
 impl Pdf<(f64, f64)> for StdNormal {
     fn pdf(&self, x: &(f64, f64)) -> f64 {

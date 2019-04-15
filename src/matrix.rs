@@ -1,6 +1,6 @@
 use std::ops::Mul;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Matrix2 {
     a: f64,
     b: f64,
@@ -15,6 +15,10 @@ impl Matrix2 {
             c: r1.0,
             d: r1.1,
         }
+    }
+
+    pub fn diagonal(a: f64, b: f64) -> Self {
+        Self::new((a, 0.0), (0.0, b))
     }
 
     pub fn det(&self) -> f64 {

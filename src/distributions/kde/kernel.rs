@@ -1,23 +1,15 @@
 use crate::distributions::kde::Point;
-use crate::distributions::Pdf;
+use crate::distributions::StdNormal;
 use crate::matrix::{Matrix2, Transpose};
 use std::f64::consts::PI;
 
 pub trait Kernel<P: Point> {
-    fn density(&self, point: &P, bandwidth: &P::Bandwidth) -> f64;
-}
-
-#[derive(Debug, Clone, Copy)]
-pub struct StdNormal;
-impl Pdf<(f64, f64)> for StdNormal {
-    fn pdf(&self, x: &(f64, f64)) -> f64 {
-        let a = 1.0 / (2.0 * PI);
-        let b = x.0 * x.0 + x.1 * x.1;
-        a * (-0.5 * b).exp()
-    }
+    fn density(&self, x: &P, xi: &P, bandwidth: &P::Bandwidth) -> f64;
 }
 impl Kernel<(f64, f64)> for StdNormal {
-    fn density(&self, &x: &(f64, f64), h: &Matrix2) -> f64 {
+    fn density(&self, &x: &(f64, f64), &xi: &(f64, f64), h: &Matrix2) -> f64 {
+        let x = (x.0 - xi.0, x.1 - xi.1);
+
         let a = 1.0 / (2.0 * PI);
         let b = h.det().powf(-0.5);
         let c = Transpose(x) * (h.inverse() * x);
@@ -28,6 +20,7 @@ impl Kernel<(f64, f64)> for StdNormal {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::distributions::Pdf;
 
     #[test]
     fn normal_pdf_works() {
@@ -128,7 +121,7 @@ mod tests {
             ),
         ];
         for (x, y, pdf) in data.iter().cloned() {
-            assert_eq!(StdNormal.density(&(x, y), &h), pdf);
+            assert_eq!(StdNormal.density(&(x, y), &(0.0, 0.0), &h), pdf);
         }
     }
 }
