@@ -1,5 +1,5 @@
 use self::selectors::{SelectBandwidth, SilvermanRot};
-use crate::distributions::{Pdf, StdNormal};
+use crate::distributions::{Pdf, StandardNormal};
 use crate::matrix::Matrix2;
 
 pub use self::kernel::Kernel;
@@ -15,14 +15,14 @@ impl Point for (f64, f64) {
 }
 
 #[derive(Debug)]
-pub struct KernelDensityEstimatorBuilder<S = SilvermanRot, K = StdNormal> {
+pub struct KernelDensityEstimatorBuilder<S = SilvermanRot, K = StandardNormal> {
     kernel: K,
     selector: S,
 }
-impl KernelDensityEstimatorBuilder<SilvermanRot, StdNormal> {
+impl KernelDensityEstimatorBuilder<SilvermanRot, StandardNormal> {
     pub fn new() -> Self {
         Self {
-            kernel: StdNormal,
+            kernel: StandardNormal,
             selector: SilvermanRot,
         }
     }
@@ -65,7 +65,7 @@ impl<S, K> KernelDensityEstimatorBuilder<S, K> {
 }
 
 #[derive(Debug)]
-pub struct KernelDensityEstimator<P, S = SilvermanRot, K = StdNormal> {
+pub struct KernelDensityEstimator<P, S = SilvermanRot, K = StandardNormal> {
     kernel: K,
     selector: S,
     points: Vec<P>,

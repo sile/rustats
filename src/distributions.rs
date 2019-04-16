@@ -1,4 +1,4 @@
-pub use self::normal::StdNormal;
+pub use self::normal::StandardNormal;
 
 pub mod kde;
 

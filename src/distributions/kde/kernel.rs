@@ -1,12 +1,12 @@
 use crate::distributions::kde::Point;
-use crate::distributions::StdNormal;
+use crate::distributions::StandardNormal;
 use crate::matrix::{Matrix2, Transpose};
 use std::f64::consts::PI;
 
 pub trait Kernel<P: Point> {
     fn density(&self, x: &P, xi: &P, bandwidth: &P::Bandwidth) -> f64;
 }
-impl Kernel<(f64, f64)> for StdNormal {
+impl Kernel<(f64, f64)> for StandardNormal {
     fn density(&self, &x: &(f64, f64), &xi: &(f64, f64), h: &Matrix2) -> f64 {
         let x = (x.0 - xi.0, x.1 - xi.1);
 
@@ -69,7 +69,7 @@ mod tests {
             ),
         ];
         for (x, y, pdf) in data.iter().cloned() {
-            assert_eq!(StdNormal.pdf(&(x, y)), pdf);
+            assert_eq!(StandardNormal.pdf(&(x, y)), pdf);
         }
     }
 
@@ -121,7 +121,7 @@ mod tests {
             ),
         ];
         for (x, y, pdf) in data.iter().cloned() {
-            assert_eq!(StdNormal.density(&(x, y), &(0.0, 0.0), &h), pdf);
+            assert_eq!(StandardNormal.density(&(x, y), &(0.0, 0.0), &h), pdf);
         }
     }
 }
