@@ -42,6 +42,7 @@ where
     D: Pdf<(f64, f64)>,
 {
     fn pdf(&self, &x: &f64) -> f64 {
+        // NOTE: incomplete PDF (The sum is less than 1.0)
         self.inner.pdf(&(x, self.y))
     }
 }
