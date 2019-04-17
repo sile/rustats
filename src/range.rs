@@ -1,5 +1,6 @@
 use crate::{ErrorKind, Result};
 use std::cmp::Ordering;
+use std::iter;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Range<T> {
@@ -26,6 +27,12 @@ where
             | (Some(Ordering::Less), Some(Ordering::Greater)) => true,
             _ => false,
         }
+    }
+}
+impl Range<f64> {
+    pub fn iter(&self, interval: f64) -> impl Iterator<Item = f64> {
+        let Range { low, high } = *self;
+        iter::successors(Some(low), move |x| Some(x + interval)).take_while(move |&x| x < high)
     }
 }
 impl Range<f64> {

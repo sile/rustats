@@ -32,7 +32,8 @@ pub fn amise2_normal<F>(points: &[(f64, f64)], h: &Matrix2, psi: Matrix4) -> f64
 
     let m2 = 1f64.powi(2);
     let b = 0.25 * m2;
-    let vec = h.cols().flat_map(|c| c.iter()).collect::<Vec<_>>();
-    let c = Transpose(vec) * (psi * vec.clone());
-    a + b * c
+    // let vec = h.cols().flat_map(|c| c.iter()).collect::<Vec<_>>();
+    // let c = Transpose(vec) * (psi * vec.clone());
+    // a + b * c
+    unimplemented!()
 }
