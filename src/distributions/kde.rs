@@ -60,15 +60,20 @@ impl<S, K> KernelDensityEstimatorBuilder<S, K> {
             kernel: self.kernel,
             selector: self.selector,
             points: Vec::new(),
+            bandwidth: None,
         }
     }
 }
 
 #[derive(Debug)]
-pub struct KernelDensityEstimator<P, S = SilvermanRot, K = StandardNormal> {
+pub struct KernelDensityEstimator<P, S = SilvermanRot, K = StandardNormal>
+where
+    P: Point,
+{
     kernel: K,
     selector: S,
     points: Vec<P>,
+    bandwidth: Option<P::Bandwidth>,
 }
 impl<P, S, K> KernelDensityEstimator<P, S, K>
 where
@@ -88,10 +93,17 @@ where
 {
     pub fn push(&mut self, point: P) {
         self.points.push(point);
+
+        // TODO: optimize
+        self.bandwidth = Some(self.selector.select_bandwidth(&self.points));
     }
 
     pub fn points(&self) -> &[P] {
         &self.points
+    }
+
+    pub fn points_mut(&mut self) -> &mut Vec<P> {
+        &mut self.points
     }
 
     pub fn selector(&self) -> &S {
@@ -130,12 +142,12 @@ where
     K: Kernel<P>,
 {
     fn pdf(&self, x: &P) -> f64 {
-        let bandwidth = self.selector.select_bandwidth(&self.points);
+        let bandwidth = self.bandwidth.as_ref().unwrap_or_else(|| unimplemented!());
         let n = self.points.len() as f64;
         let s = self
             .points
             .iter()
-            .map(|xi| self.kernel.density(x, xi, &bandwidth))
+            .map(|xi| self.kernel.density(x, xi, bandwidth))
             .sum::<f64>();
         s / n
     }

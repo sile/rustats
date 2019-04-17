@@ -23,7 +23,7 @@ impl From<Infallible> for Error {
 }
 
 /// Possible error kinds.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub enum ErrorKind {
     /// Invalid input was given.
     InvalidInput,

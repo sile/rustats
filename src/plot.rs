@@ -5,13 +5,17 @@ use std::fs::File;
 use std::io::Write;
 use std::path::Path;
 
+// ```gnuplot
+// set contour
+// splot "FILE" w l
+// ```
 #[derive(Debug)]
 pub struct Density2d<'a, D> {
     distribution: &'a D,
     pub xrange: Range<f64>,
     pub yrange: Range<f64>,
-    pub xinterval: f64,
-    pub yinterval: f64,
+    pub xsamples: usize,
+    pub ysamples: usize,
 }
 impl<'a, D> Density2d<'a, D>
 where
@@ -28,15 +32,15 @@ where
                 low: 0.0,
                 high: 1.0,
             },
-            xinterval: 0.1,
-            yinterval: 0.1,
+            xsamples: 100,
+            ysamples: 100,
         }
     }
 
     pub fn to_writer<W: Write>(&self, mut writer: W) -> Result<()> {
         track!(writeln!(writer, "# x y z(density)").map_err(Error::from))?;
-        for x in self.xrange.iter(self.xinterval) {
-            for y in self.yrange.iter(self.yinterval) {
+        for x in self.xrange.iter(self.xrange.width() / self.xsamples as f64) {
+            for y in self.yrange.iter(self.yrange.width() / self.ysamples as f64) {
                 let density = self.distribution.pdf(&(x, y));
                 track!(writeln!(writer, "{} {} {}", x, y, density).map_err(Error::from))?;
             }
@@ -47,7 +51,7 @@ where
     }
 
     pub fn to_file<P: AsRef<Path>>(&self, path: P) -> Result<()> {
-        let f = track!(File::create(path).map_err(Error::from))?;
+        let f = track!(File::create(&path).map_err(Error::from); path.as_ref())?;
         track!(self.to_writer(f))
     }
 }
