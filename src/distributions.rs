@@ -8,6 +8,7 @@ pub trait Pdf<T> {
     fn pdf(&self, x: &T) -> f64;
 }
 
+// This can be regarded as an unnormalized conditional probability distribution.
 #[derive(Debug)]
 pub struct FixY<D> {
     inner: D,
