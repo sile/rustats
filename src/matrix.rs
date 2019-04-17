@@ -1,5 +1,13 @@
 use std::ops::Mul;
 
+#[derive(Debug, Clone)]
+pub struct Matrix4 {
+    a: (f64, f64, f64, f64),
+    b: (f64, f64, f64, f64),
+    c: (f64, f64, f64, f64),
+    d: (f64, f64, f64, f64),
+}
+
 #[derive(Debug, Clone, Copy)]
 pub struct Matrix2 {
     a: f64,
