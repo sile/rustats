@@ -42,6 +42,11 @@ impl Matrix2 {
             d: self.a / det,
         }
     }
+
+    pub fn lower_triangular(&self) -> impl Iterator<Item = f64> {
+        use std::iter::once;
+        once(self.a).chain(once(self.c)).chain(once(self.d))
+    }
 }
 impl Mul<(f64, f64)> for Matrix2 {
     type Output = (f64, f64);
