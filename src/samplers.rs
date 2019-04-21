@@ -31,9 +31,21 @@ impl<D> SliceSampler3d<D> {
         rng: &mut R,
         range: Range<(f64, f64, f64)>,
     ) -> (f64, f64, f64) {
-        let x = rng.gen_range(range.low.0, range.high.0);
-        let y = rng.gen_range(range.low.1, range.high.1);
-        let z = rng.gen_range(range.low.2, range.high.2);
+        let x = if range.low.0 == range.high.0 {
+            range.low.0
+        } else {
+            rng.gen_range(range.low.0, range.high.0)
+        };
+        let y = if range.low.1 == range.high.1 {
+            range.low.1
+        } else {
+            rng.gen_range(range.low.1, range.high.1)
+        };
+        let z = if range.low.2 == range.high.2 {
+            range.low.2
+        } else {
+            rng.gen_range(range.low.2, range.high.2)
+        };
         (x, y, z)
     }
 }
@@ -53,12 +65,18 @@ where
         } else {
             self.distribution.pdf(&last_x)
         };
-        let border = rng.gen_range(0.0, last_y);
+
+        let border = if last_y == 0.0 {
+            // TODO: remove 0 handling
+            0.0
+        } else {
+            rng.gen_range(0.0, last_y)
+        };
         let mut range = self.range;
         loop {
             let x = self.gen_range(rng, range);
             let y = self.distribution.pdf(&x);
-            if y > border {
+            if y > border || border == 0.0 {
                 self.last_point.set(Some(x));
                 self.last_y.set(Some(y));
                 return x;
@@ -125,12 +143,17 @@ where
         };
 
         let last_y = self.distribution.pdf(&last_x);
-        let border = rng.gen_range(0.0, last_y);
+        let border = if last_y == 0.0 {
+            // TODO: remove 0 handling
+            0.0
+        } else {
+            rng.gen_range(0.0, last_y)
+        };
         let mut range = self.range;
         loop {
             let x = rng.gen_range(range.low, range.high);
             let y = self.distribution.pdf(&x);
-            if y > border {
+            if y > border || border == 0.0 {
                 self.last_x.set(x);
                 return x;
             }
