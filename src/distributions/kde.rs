@@ -95,7 +95,9 @@ where
         self.points.push(point);
 
         // TODO: optimize
-        self.bandwidth = Some(self.selector.select_bandwidth(&self.points));
+        if self.points.len() > 1 {
+            self.bandwidth = Some(self.selector.select_bandwidth(&self.kernel, &self.points));
+        }
     }
 
     pub fn points(&self) -> &[P] {
@@ -155,8 +157,10 @@ where
 
 #[cfg(test)]
 mod tests {
+    use super::selectors::BayesianSelector;
     use super::*;
     use crate::distributions::Pdf;
+    use crate::range::Range;
 
     #[test]
     fn kde_rot_works() {
@@ -192,5 +196,47 @@ mod tests {
         assert_eq!(kde.pdf(&(0.2, 0.2)), 0.5279661447250167);
         assert_eq!(kde.pdf(&(0.1, 0.4)), 0.6216566550321325);
         assert_eq!(kde.pdf(&(2.0, 2.4)), 0.00000023735062151042504);
+    }
+
+    #[test]
+    fn kde_bayesian_works() {
+        let selector = BayesianSelector::new(Range {
+            low: (0.0, 0.0),
+            high: (1.0, 1.0),
+        });
+        let mut kde = KernelDensityEstimatorBuilder::new()
+            .selector(selector)
+            .finish::<(f64, f64)>();
+        let xs = [
+            0.38897972954436744,
+            0.21575530912512608,
+            0.4594677812717819,
+            0.3517222887315343,
+            0.9778939800250716,
+            0.111707692159418,
+            0.42829174692685035,
+            0.3578677422355636,
+            0.08399333064039338,
+            0.5204669069143946,
+        ];
+        let ys = [
+            0.8282605782037772,
+            0.3399377882894066,
+            0.5576939017521526,
+            0.1923711081922198,
+            0.6086854735552321,
+            0.5131020176289642,
+            0.7632850336269744,
+            0.6099470684522489,
+            0.41308355846616196,
+            0.962957265549666,
+        ];
+        for point in xs.iter().cloned().zip(ys.iter().cloned()) {
+            kde.push(point);
+        }
+
+        // assert_eq!(kde.pdf(&(0.2, 0.2)), 0.11119459730282069);
+        // assert_eq!(kde.pdf(&(0.1, 0.4)), 0.6216566550321325);
+        // assert_eq!(kde.pdf(&(2.0, 2.4)), 0.00000023735062151042504);
     }
 }

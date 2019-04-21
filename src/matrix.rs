@@ -29,6 +29,19 @@ impl Matrix2 {
         Self::new((a, 0.0), (0.0, b))
     }
 
+    pub fn from_lower_triangular(x: (f64, f64, f64)) -> Self {
+        Self::new((x.0, 0.0), (x.1, x.2))
+    }
+
+    pub fn transpose(&self) -> Self {
+        Self {
+            a: self.a,
+            b: self.c,
+            c: self.b,
+            d: self.d,
+        }
+    }
+
     pub fn det(&self) -> f64 {
         self.a * self.d - self.b * self.c
     }
@@ -47,6 +60,10 @@ impl Matrix2 {
         use std::iter::once;
         once(self.a).chain(once(self.c)).chain(once(self.d))
     }
+
+    pub fn lower_triangular_tuple(&self) -> (f64, f64, f64) {
+        (self.a, self.c, self.d)
+    }
 }
 impl Mul<(f64, f64)> for Matrix2 {
     type Output = (f64, f64);
@@ -55,6 +72,20 @@ impl Mul<(f64, f64)> for Matrix2 {
         let x = self.a * rhs.0 + self.b * rhs.1;
         let y = self.c * rhs.0 + self.d * rhs.1;
         (x, y)
+    }
+}
+impl Mul<Matrix2> for Matrix2 {
+    type Output = Matrix2;
+
+    fn mul(self, rhs: Matrix2) -> Self::Output {
+        let c0 = self * (rhs.a, rhs.c);
+        let c1 = self * (rhs.b, rhs.d);
+        Self {
+            a: c0.0,
+            b: c1.0,
+            c: c0.1,
+            d: c1.1,
+        }
     }
 }
 

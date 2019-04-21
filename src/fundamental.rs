@@ -9,6 +9,19 @@ where
     var.sqrt()
 }
 
+pub fn average<I>(xs: I) -> f64
+where
+    I: Iterator<Item = f64>,
+{
+    let mut n = 0;
+    let mut sum = 0.0;
+    for x in xs {
+        n += 1;
+        sum += x;
+    }
+    sum / (n as f64)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

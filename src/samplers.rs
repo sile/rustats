@@ -20,6 +20,10 @@ impl<D> SliceSampler3d<D> {
         }
     }
 
+    pub fn set_last_point(&mut self, point: (f64, f64, f64)) {
+        self.last_point.set(Some(point));
+    }
+
     fn gen_range<R: Rng + ?Sized>(
         &self,
         rng: &mut R,

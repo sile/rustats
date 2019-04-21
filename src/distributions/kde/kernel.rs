@@ -1,9 +1,9 @@
 use crate::distributions::kde::Point;
-use crate::distributions::StandardNormal;
+use crate::distributions::{Pdf, StandardNormal};
 use crate::matrix::{Matrix2, Transpose};
 use std::f64::consts::PI;
 
-pub trait Kernel<P: Point> {
+pub trait Kernel<P: Point>: Pdf<P> {
     fn density(&self, x: &P, xi: &P, bandwidth: &P::Bandwidth) -> f64;
 }
 impl Kernel<(f64, f64)> for StandardNormal {
