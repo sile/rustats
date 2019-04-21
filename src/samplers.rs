@@ -10,6 +10,7 @@ pub struct SliceSampler3d<D> {
     distribution: D,
     range: Range<(f64, f64, f64)>,
     last_point: Cell<Option<(f64, f64, f64)>>,
+    last_y: Cell<Option<f64>>,
 }
 impl<D> SliceSampler3d<D> {
     pub fn new(distribution: D, range: Range<(f64, f64, f64)>) -> Self {
@@ -17,6 +18,7 @@ impl<D> SliceSampler3d<D> {
             distribution,
             range,
             last_point: Cell::new(None),
+            last_y: Cell::new(None),
         }
     }
 
@@ -46,7 +48,11 @@ where
             self.gen_range(rng, self.range)
         };
 
-        let last_y = self.distribution.pdf(&last_x);
+        let last_y = if let Some(y) = self.last_y.get() {
+            y
+        } else {
+            self.distribution.pdf(&last_x)
+        };
         let border = rng.gen_range(0.0, last_y);
         let mut range = self.range;
         loop {
@@ -54,6 +60,7 @@ where
             let y = self.distribution.pdf(&x);
             if y > border {
                 self.last_point.set(Some(x));
+                self.last_y.set(Some(y));
                 return x;
             }
 

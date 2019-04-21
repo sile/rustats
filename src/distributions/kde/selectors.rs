@@ -161,9 +161,13 @@ where
         let v0 = self.prior_density(b.0) * self.prior_density(b.1) * self.prior_density(b.2);
 
         let b = Matrix2::from_lower_triangular(*b);
-        let v1 = (0..self.points.len())
-            .map(|i| self.likelihood(i, &b))
-            .product::<f64>();
+        let mut v1 = 1.0;
+        for i in 0..self.points.len() {
+            v1 *= self.likelihood(i, &b);
+            if v1 == 0.0 {
+                return 0.0;
+            }
+        }
         v0 * v1
     }
 }
