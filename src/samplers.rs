@@ -6,6 +6,73 @@ use std::cell::Cell;
 use std::f64::NAN;
 
 #[derive(Debug)]
+pub struct SliceSampler3d<D> {
+    distribution: D,
+    range: Range<(f64, f64, f64)>,
+    last_point: Cell<Option<(f64, f64, f64)>>,
+}
+impl<D> SliceSampler3d<D> {
+    pub fn new(distribution: D, range: Range<(f64, f64, f64)>) -> Self {
+        Self {
+            distribution,
+            range,
+            last_point: Cell::new(None),
+        }
+    }
+
+    fn gen_range<R: Rng + ?Sized>(
+        &self,
+        rng: &mut R,
+        range: Range<(f64, f64, f64)>,
+    ) -> (f64, f64, f64) {
+        let x = rng.gen_range(range.low.0, range.high.0);
+        let y = rng.gen_range(range.low.1, range.high.1);
+        let z = rng.gen_range(range.low.2, range.high.2);
+        (x, y, z)
+    }
+}
+impl<D> Distribution<(f64, f64, f64)> for SliceSampler3d<D>
+where
+    D: Pdf<(f64, f64, f64)>,
+{
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> (f64, f64, f64) {
+        let last_x = if let Some(p) = self.last_point.get() {
+            p
+        } else {
+            self.gen_range(rng, self.range)
+        };
+
+        let last_y = self.distribution.pdf(&last_x);
+        let border = rng.gen_range(0.0, last_y);
+        let mut range = self.range;
+        loop {
+            let x = self.gen_range(rng, range);
+            let y = self.distribution.pdf(&x);
+            if y > border {
+                self.last_point.set(Some(x));
+                return x;
+            }
+
+            if x.0 < last_x.0 {
+                range.low.0 = x.0;
+            } else {
+                range.high.0 = x.0;
+            }
+            if x.1 < last_x.1 {
+                range.low.1 = x.1;
+            } else {
+                range.high.1 = x.1;
+            }
+            if x.2 < last_x.2 {
+                range.low.2 = x.2;
+            } else {
+                range.high.2 = x.2;
+            }
+        }
+    }
+}
+
+#[derive(Debug)]
 pub struct SliceSampler<D> {
     distribution: D,
     range: Range<f64>,
