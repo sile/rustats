@@ -10,6 +10,9 @@ pub mod selectors;
 pub trait Point {
     type Bandwidth;
 }
+impl Point for f64 {
+    type Bandwidth = f64;
+}
 impl Point for (f64, f64) {
     type Bandwidth = Matrix2;
 }
@@ -95,6 +98,16 @@ where
         self.points.push(point);
 
         // TODO: optimize
+        if self.points.len() > 1 {
+            self.bandwidth = Some(self.selector.select_bandwidth(&self.kernel, &self.points));
+        }
+    }
+
+    pub fn extend<I>(&mut self, points: I)
+    where
+        I: Iterator<Item = P>,
+    {
+        self.points.extend(points);
         if self.points.len() > 1 {
             self.bandwidth = Some(self.selector.select_bandwidth(&self.kernel, &self.points));
         }

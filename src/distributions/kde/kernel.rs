@@ -6,6 +6,13 @@ use std::f64::consts::PI;
 pub trait Kernel<P: Point>: Pdf<P> {
     fn density(&self, x: &P, xi: &P, bandwidth: &P::Bandwidth) -> f64;
 }
+impl Kernel<f64> for StandardNormal {
+    fn density(&self, &x: &f64, &xi: &f64, &h: &f64) -> f64 {
+        let a = (2.0 * PI).sqrt() * h;
+        let b = -(x - xi).powi(2) / (2.0 * h * h);
+        b.exp() / a
+    }
+}
 impl Kernel<(f64, f64)> for StandardNormal {
     fn density(&self, &x: &(f64, f64), &xi: &(f64, f64), h: &Matrix2) -> f64 {
         let x = (x.0 - xi.0, x.1 - xi.1);

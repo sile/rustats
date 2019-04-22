@@ -21,6 +21,13 @@ impl SelectBandwidth<(f64, f64)> for Matrix2 {
 
 #[derive(Debug, Default, Clone, Copy)]
 pub struct SilvermanRot;
+impl SelectBandwidth<f64> for SilvermanRot {
+    fn select_bandwidth<K: Kernel<f64>>(&self, _kernel: &K, points: &[f64]) -> f64 {
+        let n = points.len() as f64;
+        let sd = stddev(points.iter().cloned());
+        1.06 * sd * n.powf(-0.2)
+    }
+}
 impl SelectBandwidth<(f64, f64)> for SilvermanRot {
     fn select_bandwidth<K: Kernel<(f64, f64)>>(
         &self,
