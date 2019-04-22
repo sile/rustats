@@ -1,4 +1,4 @@
-use std::cmp::Ordering;
+use std::cmp::{self, Ordering};
 
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 pub struct NonNanF64(f64);
