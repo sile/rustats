@@ -33,9 +33,9 @@ impl SelectBandwidth<MaybeUniform<f64>> for SilvermanRot {
     fn select_bandwidth<K: Kernel<MaybeUniform<f64>>>(
         &self,
         _kernel: &K,
-        points: &[MaybeUniform<f64>],
+        points0: &[MaybeUniform<f64>],
     ) -> f64 {
-        let points = points
+        let points = points0
             .iter()
             .filter_map(|x| {
                 if let MaybeUniform::Sample(x) = *x {
@@ -46,6 +46,17 @@ impl SelectBandwidth<MaybeUniform<f64>> for SilvermanRot {
             })
             .collect::<Vec<_>>();
         let n = points.len() as f64;
+        if let Some(MaybeUniform::Uniform(range)) = points0.iter().find(|x| {
+            if let MaybeUniform::Uniform(_) = x {
+                true
+            } else {
+                false
+            }
+        }) {
+            // TODO
+            return range.width() / points0.len() as f64;
+        }
+
         let sd = stddev(points.into_iter());
         1.06 * sd * n.powf(-0.2)
     }
