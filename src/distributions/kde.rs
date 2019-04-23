@@ -1,16 +1,27 @@
 use self::selectors::{SelectBandwidth, SilvermanRot};
 use crate::distributions::{Pdf, StandardNormal};
 use crate::matrix::Matrix2;
+use crate::range::Range;
 
 pub use self::kernel::Kernel;
 
 mod kernel;
 pub mod selectors;
 
+#[derive(Debug, Clone, Copy)]
+pub enum MaybeUniform<T> {
+    Uniform(Range<T>),
+    Sample(T),
+}
+
 pub trait Point {
     type Bandwidth;
 }
 impl Point for f64 {
+    type Bandwidth = f64;
+}
+impl Point for MaybeUniform<f64> {
+    // TODO:
     type Bandwidth = f64;
 }
 impl Point for (f64, f64) {
@@ -113,6 +124,14 @@ where
         }
     }
 
+    pub fn reset<I>(&mut self, points: I)
+    where
+        I: Iterator<Item = P>,
+    {
+        self.points.clear();
+        self.extend(points);
+    }
+
     pub fn points(&self) -> &[P] {
         &self.points
     }
@@ -150,13 +169,14 @@ where
             .finish()
     }
 }
-impl<P, S, K> Pdf<P> for KernelDensityEstimator<P, S, K>
+impl<P, Q, S, K> Pdf<Q> for KernelDensityEstimator<P, S, K>
 where
     P: Point,
+    Q: Point<Bandwidth = P::Bandwidth>,
     S: SelectBandwidth<P>,
-    K: Kernel<P>,
+    K: Kernel<Q, P>,
 {
-    fn pdf(&self, x: &P) -> f64 {
+    fn pdf(&self, x: &Q) -> f64 {
         let bandwidth = self.bandwidth.as_ref().unwrap_or_else(|| unimplemented!());
         let n = self.points.len() as f64;
         let s = self

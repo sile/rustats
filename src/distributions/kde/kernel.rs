@@ -1,16 +1,53 @@
+use super::MaybeUniform;
 use crate::distributions::kde::Point;
 use crate::distributions::{Pdf, StandardNormal};
 use crate::matrix::{Matrix2, Transpose};
 use std::f64::consts::PI;
 
-pub trait Kernel<P: Point>: Pdf<P> {
-    fn density(&self, x: &P, xi: &P, bandwidth: &P::Bandwidth) -> f64;
+pub trait Kernel<P: Point, RHS = P>: Pdf<P> {
+    fn density(&self, x: &P, xi: &RHS, bandwidth: &P::Bandwidth) -> f64;
 }
 impl Kernel<f64> for StandardNormal {
     fn density(&self, &x: &f64, &xi: &f64, &h: &f64) -> f64 {
         let a = (2.0 * PI).sqrt() * h;
         let b = -(x - xi).powi(2) / (2.0 * h * h);
         b.exp() / a
+    }
+}
+// TODO: delete
+impl Pdf<MaybeUniform<f64>> for StandardNormal {
+    fn pdf(&self, x: &MaybeUniform<f64>) -> f64 {
+        match x {
+            MaybeUniform::Sample(x) => StandardNormal.pdf(x),
+            MaybeUniform::Uniform(range) => 1.0 / range.width(),
+        }
+    }
+}
+impl Kernel<f64, MaybeUniform<f64>> for StandardNormal {
+    // TODO
+    fn density(&self, x: &f64, xi: &MaybeUniform<f64>, &h: &f64) -> f64 {
+        match xi {
+            MaybeUniform::Sample(xi) => {
+                let a = (2.0 * PI).sqrt() * h;
+                let b = -(x - xi).powi(2) / (2.0 * h * h);
+                b.exp() / a
+            }
+            MaybeUniform::Uniform(range) => 1.0 / (range.width() * h),
+        }
+    }
+}
+impl Kernel<MaybeUniform<f64>> for StandardNormal {
+    // TODO
+    fn density(&self, x: &MaybeUniform<f64>, xi: &MaybeUniform<f64>, &h: &f64) -> f64 {
+        match (x, xi) {
+            (MaybeUniform::Sample(x), MaybeUniform::Sample(xi)) => {
+                let a = (2.0 * PI).sqrt() * h;
+                let b = -(x - xi).powi(2) / (2.0 * h * h);
+                b.exp() / a
+            }
+            (MaybeUniform::Uniform(_), _) => panic!(),
+            (_, MaybeUniform::Uniform(range)) => 1.0 / (range.width() * h),
+        }
     }
 }
 impl Kernel<(f64, f64)> for StandardNormal {

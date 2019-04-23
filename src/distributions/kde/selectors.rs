@@ -1,3 +1,4 @@
+use super::MaybeUniform;
 use super::{Kernel, Point};
 use crate::distributions::Pdf;
 use crate::fundamental::{average, stddev};
@@ -25,6 +26,27 @@ impl SelectBandwidth<f64> for SilvermanRot {
     fn select_bandwidth<K: Kernel<f64>>(&self, _kernel: &K, points: &[f64]) -> f64 {
         let n = points.len() as f64;
         let sd = stddev(points.iter().cloned());
+        1.06 * sd * n.powf(-0.2)
+    }
+}
+impl SelectBandwidth<MaybeUniform<f64>> for SilvermanRot {
+    fn select_bandwidth<K: Kernel<MaybeUniform<f64>>>(
+        &self,
+        _kernel: &K,
+        points: &[MaybeUniform<f64>],
+    ) -> f64 {
+        let points = points
+            .iter()
+            .filter_map(|x| {
+                if let MaybeUniform::Sample(x) = *x {
+                    Some(x)
+                } else {
+                    None
+                }
+            })
+            .collect::<Vec<_>>();
+        let n = points.len() as f64;
+        let sd = stddev(points.into_iter());
         1.06 * sd * n.powf(-0.2)
     }
 }
