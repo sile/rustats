@@ -10,6 +10,15 @@ use rand::distributions::Distribution;
 pub trait SelectBandwidth<P: Point> {
     fn select_bandwidth<K: Kernel<P>>(&self, kernel: &K, points: &[P]) -> P::Bandwidth;
 }
+impl SelectBandwidth<MaybeUniform<f64>> for f64 {
+    fn select_bandwidth<K: Kernel<MaybeUniform<f64>>>(
+        &self,
+        _kernel: &K,
+        _points: &[MaybeUniform<f64>],
+    ) -> Self {
+        self.clone()
+    }
+}
 impl SelectBandwidth<(f64, f64)> for Matrix2 {
     fn select_bandwidth<K: Kernel<(f64, f64)>>(
         &self,
@@ -22,6 +31,17 @@ impl SelectBandwidth<(f64, f64)> for Matrix2 {
 
 #[derive(Debug, Default, Clone, Copy)]
 pub struct SilvermanRot;
+impl SilvermanRot {
+    pub fn bandwidth<I>(points: I) -> f64
+    where
+        I: Iterator<Item = f64>,
+    {
+        let points = points.collect::<Vec<_>>();
+        let n = points.len() as f64;
+        let sd = stddev(points.into_iter());
+        1.06 * sd * n.powf(-0.2)
+    }
+}
 impl SelectBandwidth<f64> for SilvermanRot {
     fn select_bandwidth<K: Kernel<f64>>(&self, _kernel: &K, points: &[f64]) -> f64 {
         let n = points.len() as f64;
