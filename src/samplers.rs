@@ -130,6 +130,10 @@ where
     pub fn range(&self) -> Range<f64> {
         self.range
     }
+
+    pub fn set_last_x(&mut self, x: f64) {
+        self.last_x.set(x);
+    }
 }
 impl<D> Distribution<f64> for SliceSampler<D>
 where

@@ -46,16 +46,16 @@ impl SelectBandwidth<MaybeUniform<f64>> for SilvermanRot {
             })
             .collect::<Vec<_>>();
         let n = points.len() as f64;
-        if let Some(MaybeUniform::Uniform(range)) = points0.iter().find(|x| {
-            if let MaybeUniform::Uniform(_) = x {
-                true
-            } else {
-                false
-            }
-        }) {
-            // TODO
-            return range.width() / points0.len() as f64;
-        }
+        // if let Some(MaybeUniform::Uniform(range)) = points0.iter().find(|x| {
+        //     if let MaybeUniform::Uniform(_) = x {
+        //         true
+        //     } else {
+        //         false
+        //     }
+        // }) {
+        //     // TODO
+        //     return range.width() / points0.len() as f64;
+        // }
 
         let sd = stddev(points.into_iter());
         1.06 * sd * n.powf(-0.2)
