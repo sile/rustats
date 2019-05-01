@@ -3,7 +3,7 @@ use std::cmp::Ordering;
 use std::fmt;
 
 /// An floating point number that is known not NaN.
-#[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, PartialOrd)]
 pub struct NonNanF64(f64);
 impl NonNanF64 {
     /// Creates a non NaN without checking the value.
