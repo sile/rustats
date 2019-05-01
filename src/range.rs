@@ -2,6 +2,8 @@ use crate::{ErrorKind, Result};
 use std::cmp::Ordering;
 use std::iter;
 
+// TODO: Add `NonEmptyRange` or `FiniteRange`
+
 #[derive(Debug, Clone, Copy)]
 pub struct Range<T> {
     // TODO: private

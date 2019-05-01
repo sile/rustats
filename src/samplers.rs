@@ -147,26 +147,49 @@ where
         };
 
         let last_y = self.distribution.pdf(&last_x);
+        assert!(
+            last_y.is_finite(),
+            "last_y={:?}, last_x={:?}",
+            last_y,
+            last_x
+        );
+
         let border = if last_y == 0.0 {
             // TODO: remove 0 handling
-            0.0
+            let x = rng.gen_range(self.range.low, self.range.high);
+            self.last_x.set(x);
+            return x;
         } else {
+            assert!(0.0 < last_y && last_y.is_finite(), "last_y={:?}", last_y);
             rng.gen_range(0.0, last_y)
         };
         let mut range = self.range;
-        loop {
+        for _ in 0..128 {
+            if range.low == range.high {
+                break;
+            }
+
+            assert!(
+                range.low < range.high && range.low.is_finite() && range.high.is_finite(),
+                "range={:?}",
+                range
+            );
             let x = rng.gen_range(range.low, range.high);
             let y = self.distribution.pdf(&x);
-            if y > border || border == 0.0 {
+            if y > border {
                 self.last_x.set(x);
                 return x;
             }
-            if x < last_x {
+            if x <= last_x {
                 range.low = x;
             } else {
                 range.high = x;
             }
         }
+
+        let x = range.low;
+        self.last_x.set(x);
+        x
     }
 }
 
