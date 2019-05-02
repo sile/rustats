@@ -2,7 +2,7 @@ use crate::{ErrorKind, Result};
 use std::cmp::Ordering;
 use std::iter;
 
-// TODO: Add `NonEmptyRange` or `FiniteRange`
+// TODO: Add `MaybeEmptyRange`
 
 #[derive(Debug, Clone, Copy)]
 pub struct Range<T> {
