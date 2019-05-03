@@ -15,11 +15,7 @@ where
     T: PartialOrd,
 {
     pub fn new(low: T, high: T) -> Result<Self> {
-        track_assert_eq!(
-            low.partial_cmp(&high),
-            Some(Ordering::Less),
-            ErrorKind::InvalidInput
-        );
+        track_assert!(low < high, ErrorKind::InvalidInput);
         Ok(Self { low, high })
     }
 
@@ -44,5 +40,33 @@ impl Range<f64> {
 
     pub fn width(&self) -> f64 {
         self.high - self.low
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct MinMax<T> {
+    min: T,
+    max: T,
+}
+impl<T> MinMax<T> {
+    pub const unsafe fn new_unchecked(min: T, max: T) -> Self {
+        Self { min, max }
+    }
+
+    pub const fn min(&self) -> &T {
+        &self.min
+    }
+
+    pub const fn max(&self) -> &T {
+        &self.max
+    }
+}
+impl<T> MinMax<T>
+where
+    T: PartialOrd,
+{
+    pub fn new(min: T, max: T) -> Result<Self> {
+        track_assert!(min <= max, ErrorKind::InvalidInput);
+        Ok(Self { min, max })
     }
 }
