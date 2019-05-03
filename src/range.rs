@@ -1,10 +1,13 @@
 use crate::{ErrorKind, Result};
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 use std::iter;
 
 // TODO: Add `MaybeEmptyRange`
 
 #[derive(Debug, Clone, Copy)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Range<T> {
     // TODO: private
     pub low: T,  // inclusive
@@ -44,6 +47,7 @@ impl Range<f64> {
 }
 
 #[derive(Debug, Clone, Copy)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct MinMax<T> {
     min: T,
     max: T,
@@ -68,5 +72,15 @@ where
     pub fn new(min: T, max: T) -> Result<Self> {
         track_assert!(min <= max, ErrorKind::InvalidInput);
         Ok(Self { min, max })
+    }
+
+    pub fn contains(&self, x: &T) -> bool {
+        self.min <= *x && *x <= self.max
+    }
+}
+impl MinMax<f64> {
+    // Normalizes scale of ...
+    pub fn normalize(&self, v: f64) -> f64 {
+        (v - self.min) / (self.max - self.min)
     }
 }

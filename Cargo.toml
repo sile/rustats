@@ -16,4 +16,5 @@ license = "MIT"
 
 [dependencies]
 rand = "0.6"
+serde = { version = "1", features = ["derive"], optional = true }
 trackable = "0.2"
