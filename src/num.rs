@@ -21,7 +21,7 @@ impl FiniteF64 {
     ///
     /// If the given value is NaN or infinite, an `ErrorKind::InvalidInput` error will be returned.
     pub fn new(n: f64) -> Result<Self> {
-        track_assert!(!n.is_finite(), ErrorKind::InvalidInput; n);
+        track_assert!(n.is_finite(), ErrorKind::InvalidInput; n);
         Ok(Self(n))
     }
 
