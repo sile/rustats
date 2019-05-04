@@ -6,8 +6,8 @@ use std::iter;
 
 // TODO: Add `MaybeEmptyRange`
 
-#[derive(Debug, Clone, Copy)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))] // TODO: validate deserialization
 pub struct Range<T> {
     // TODO: private
     pub low: T,  // inclusive
@@ -46,8 +46,8 @@ impl Range<f64> {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))] // TODO: validate deserialization
 pub struct MinMax<T> {
     min: T,
     max: T,

@@ -1,9 +1,12 @@
 use crate::{ErrorKind, Result};
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 use std::fmt;
 
 /// An floating point number that is neither infinite nor NaN.
 #[derive(Debug, Default, Clone, Copy, PartialEq, PartialOrd)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))] // TODO: validate deserialization
 pub struct FiniteF64(f64);
 impl FiniteF64 {
     /// Creates a `FiniteF64` instance without checking the value.
@@ -46,6 +49,7 @@ impl fmt::Display for FiniteF64 {
 
 /// An floating point number that is known not NaN.
 #[derive(Debug, Default, Clone, Copy, PartialEq, PartialOrd)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))] // TODO: validate deserialization
 pub struct NonNanF64(f64);
 impl NonNanF64 {
     /// Creates a non NaN without checking the value.
