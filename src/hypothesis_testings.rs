@@ -1,5 +1,6 @@
 use crate::distributions::{Cdf as _, StandardNormal};
 use crate::fundamental::average;
+use std::cmp::Ordering;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Alpha {
@@ -63,8 +64,8 @@ impl MannWhitneyU {
 
         if self.xn <= 20 && self.yn <= 20 {
             let critical = match alpha {
-                Alpha::P01 => TWO_TRAILED_CRITICAL_VALUES_P001[self.xn - 1][self.yn - 1],
-                Alpha::P05 => TWO_TRAILED_CRITICAL_VALUES_P005[self.xn - 1][self.yn - 1],
+                Alpha::P01 => TWO_TAILED_CRITICAL_VALUES_P001[self.xn - 1][self.yn - 1],
+                Alpha::P05 => TWO_TAILED_CRITICAL_VALUES_P005[self.xn - 1][self.yn - 1],
             };
             return self.u() <= critical as f64;
         }
@@ -77,11 +78,24 @@ impl MannWhitneyU {
         }
     }
 
+    pub fn order(&self, alpha: Alpha) -> Ordering {
+        if !self.test(alpha) {
+            Ordering::Equal
+        } else {
+            let (xu, yu) = self.xyu();
+            if xu < yu {
+                Ordering::Less
+            } else {
+                Ordering::Greater
+            }
+        }
+    }
+
     fn n(&self) -> usize {
         self.xn + self.yn
     }
 
-    fn u(&self) -> f64 {
+    fn xyu(&self) -> (f64, f64) {
         let mut xr = 0.0;
         let mut rank = 1;
         for (x, y) in self.counts.iter().cloned() {
@@ -92,7 +106,11 @@ impl MannWhitneyU {
 
         let xu = xr - (self.xn * (self.xn + 1) / 2) as f64;
         let yu = yr - (self.yn * (self.yn + 1) / 2) as f64;
+        (xu, yu)
+    }
 
+    fn u(&self) -> f64 {
+        let (xu, yu) = self.xyu();
         xu.min(yu)
     }
 
@@ -118,7 +136,7 @@ impl MannWhitneyU {
     }
 }
 
-const TWO_TRAILED_CRITICAL_VALUES_P005: [[i8; 20]; 20] = [
+const TWO_TAILED_CRITICAL_VALUES_P005: [[i8; 20]; 20] = [
     [
         -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
     ],
@@ -181,7 +199,7 @@ const TWO_TRAILED_CRITICAL_VALUES_P005: [[i8; 20]; 20] = [
     ],
 ];
 
-const TWO_TRAILED_CRITICAL_VALUES_P001: [[i8; 20]; 20] = [
+const TWO_TAILED_CRITICAL_VALUES_P001: [[i8; 20]; 20] = [
     [
         -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
     ],
@@ -260,9 +278,9 @@ mod tests {
         // Example-2
         let usual_care = vec![8, 7, 6, 2, 5, 8, 7, 3];
         let new_program = vec![9, 9, 7, 8, 10, 9, 6];
-        assert!(
-            MannWhitneyU::new(usual_care.into_iter(), new_program.into_iter()).test(Alpha::P05)
-        );
+        let mw = MannWhitneyU::new(usual_care.into_iter(), new_program.into_iter());
+        assert!(mw.test(Alpha::P05));
+        assert_eq!(mw.order(Alpha::P05), Ordering::Less);
 
         // Example-3
         let standard_therapy = vec![
