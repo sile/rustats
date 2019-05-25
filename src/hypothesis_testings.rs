@@ -1,6 +1,5 @@
 use crate::distributions::{Cdf as _, StandardNormal};
 use crate::fundamental::average;
-use std::cmp::Ordering;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Alpha {
@@ -21,8 +20,6 @@ enum Group {
 pub struct MannWhitneyU {
     xn: usize,
     yn: usize,
-    yu: f64,
-    xu: f64,
     counts: Vec<(usize, usize)>,
 }
 impl MannWhitneyU {
@@ -56,24 +53,7 @@ impl MannWhitneyU {
             prev = Some(v);
         }
 
-        let mut xr = 0.0;
-        let mut rank = 1;
-        for (x, y) in counts.iter().cloned() {
-            xr += average((rank..).take(x + y).map(|x| x as f64)) * x as f64;
-            rank += x + y;
-        }
-        let yr = (n * (n + 1) / 2) as f64 - xr;
-
-        let xu = xr - (xn * (xn + 1) / 2) as f64;
-        let yu = yr - (yn * (yn + 1) / 2) as f64;
-
-        Self {
-            xn,
-            yn,
-            xu,
-            yu,
-            counts,
-        }
+        Self { xn, yn, counts }
     }
 
     pub fn test(&self, alpha: Alpha) -> bool {
@@ -97,22 +77,23 @@ impl MannWhitneyU {
         }
     }
 
-    pub fn ordering(&self, alpha: Alpha) -> Ordering {
-        if !self.test(alpha) {
-            Ordering::Equal
-        } else if self.xu > self.yu {
-            Ordering::Less
-        } else {
-            Ordering::Greater
-        }
-    }
-
     fn n(&self) -> usize {
         self.xn + self.yn
     }
 
     fn u(&self) -> f64 {
-        self.xu.min(self.yu)
+        let mut xr = 0.0;
+        let mut rank = 1;
+        for (x, y) in self.counts.iter().cloned() {
+            xr += average((rank..).take(x + y).map(|x| x as f64)) * x as f64;
+            rank += x + y;
+        }
+        let yr = (self.n() * (self.n() + 1) / 2) as f64 - xr;
+
+        let xu = xr - (self.xn * (self.xn + 1) / 2) as f64;
+        let yu = yr - (self.yn * (self.yn + 1) / 2) as f64;
+
+        xu.min(yu)
     }
 
     fn mu(&self) -> f64 {
