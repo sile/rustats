@@ -30,7 +30,7 @@ where
     }
 
     let z = mw.z();
-    let p = (1.0 - StandardNormal.cdf(&z)) * 2.0;
+    let p = (1.0 - StandardNormal.cdf(&z.abs())) * 2.0;
     match alpha {
         Alpha::P01 => p < 0.01,
         Alpha::P05 => p < 0.05,
