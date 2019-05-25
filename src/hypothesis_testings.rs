@@ -1,5 +1,6 @@
 use crate::distributions::{Cdf as _, StandardNormal};
 use crate::fundamental::average;
+use std::cmp::Ordering;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Alpha {
@@ -10,33 +11,6 @@ pub enum Alpha {
     P05,
 }
 
-pub fn mann_whitney_u<X, Y, T>(xs: X, ys: Y, alpha: Alpha) -> bool
-where
-    X: Iterator<Item = T>,
-    Y: Iterator<Item = T>,
-    T: Ord,
-{
-    let mw = MannWhitneyU::new(xs, ys);
-    if mw.xn < 3 || mw.yn < 3 {
-        return false;
-    }
-
-    if mw.xn <= 20 && mw.yn <= 20 {
-        let critical = match alpha {
-            Alpha::P01 => TWO_TRAILED_CRITICAL_VALUES_P001[mw.xn - 3][mw.yn - 3],
-            Alpha::P05 => TWO_TRAILED_CRITICAL_VALUES_P005[mw.xn - 3][mw.yn - 3],
-        };
-        return mw.u() <= critical as f64;
-    }
-
-    let z = mw.z();
-    let p = (1.0 - StandardNormal.cdf(&z.abs())) * 2.0;
-    match alpha {
-        Alpha::P01 => p < 0.01,
-        Alpha::P05 => p < 0.05,
-    }
-}
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 enum Group {
     X,
@@ -44,9 +18,11 @@ enum Group {
 }
 
 #[derive(Debug)]
-struct MannWhitneyU {
+pub struct MannWhitneyU {
     xn: usize,
     yn: usize,
+    yu: f64,
+    xu: f64,
     counts: Vec<(usize, usize)>,
 }
 impl MannWhitneyU {
@@ -79,7 +55,56 @@ impl MannWhitneyU {
             }
             prev = Some(v);
         }
-        Self { xn, yn, counts }
+
+        let mut xr = 0.0;
+        let mut rank = 1;
+        for (x, y) in counts.iter().cloned() {
+            xr += average((rank..).take(x + y).map(|x| x as f64)) * x as f64;
+            rank += x + y;
+        }
+        let yr = (n * (n + 1) / 2) as f64 - xr;
+
+        let xu = xr - (xn * (xn + 1) / 2) as f64;
+        let yu = yr - (yn * (yn + 1) / 2) as f64;
+
+        Self {
+            xn,
+            yn,
+            xu,
+            yu,
+            counts,
+        }
+    }
+
+    pub fn test(&self, alpha: Alpha) -> bool {
+        if self.xn < 3 || self.yn < 3 {
+            return false;
+        }
+
+        if self.xn <= 20 && self.yn <= 20 {
+            let critical = match alpha {
+                Alpha::P01 => TWO_TRAILED_CRITICAL_VALUES_P001[self.xn - 3][self.yn - 3],
+                Alpha::P05 => TWO_TRAILED_CRITICAL_VALUES_P005[self.xn - 3][self.yn - 3],
+            };
+            return self.u() <= critical as f64;
+        }
+
+        let z = self.z();
+        let p = (1.0 - StandardNormal.cdf(&z.abs())) * 2.0;
+        match alpha {
+            Alpha::P01 => p < 0.01,
+            Alpha::P05 => p < 0.05,
+        }
+    }
+
+    pub fn ordering(&self, alpha: Alpha) -> Ordering {
+        if !self.test(alpha) {
+            Ordering::Equal
+        } else if self.xu > self.yu {
+            Ordering::Less
+        } else {
+            Ordering::Greater
+        }
     }
 
     fn n(&self) -> usize {
@@ -87,18 +112,7 @@ impl MannWhitneyU {
     }
 
     fn u(&self) -> f64 {
-        let mut xr = 0.0;
-        let mut rank = 1;
-        for (x, y) in self.counts.iter().cloned() {
-            xr += average((rank..).take(x + y).map(|x| x as f64)) * x as f64;
-            rank += x + y;
-        }
-        let yr = (self.n() * (self.n() + 1) / 2) as f64 - xr;
-
-        let xu = xr - (self.xn * (self.xn + 1) / 2) as f64;
-        let yu = yr - (self.yn * (self.yn + 1) / 2) as f64;
-
-        xu.min(yu)
+        self.xu.min(self.yu)
     }
 
     fn mu(&self) -> f64 {
@@ -230,37 +244,20 @@ mod tests {
     use super::*;
 
     #[test]
-    fn calc_u_works() {
-        let xs = vec![1, 7, 8, 9, 10, 11];
-        let ys = vec![2, 3, 4, 5, 6, 12];
-        assert_eq!(MannWhitneyU::new(xs.into_iter(), ys.into_iter()).u(), 11.0);
-
-        let xs = vec![1, 1];
-        let ys = vec![1, 1];
-        assert_eq!(MannWhitneyU::new(xs.into_iter(), ys.into_iter()).u(), 2.0);
-    }
-
-    #[test]
     fn mann_whitney_u_works() {
         // See: http://sphweb.bumc.bu.edu/otlt/mph-modules/bs/bs704_nonparametric/BS704_Nonparametric4.html
 
         // Example-1
         let placebo = vec![7, 5, 6, 4, 12];
         let new_drug = vec![3, 6, 4, 2, 1];
-        assert!(!mann_whitney_u(
-            placebo.into_iter(),
-            new_drug.into_iter(),
-            Alpha::P05
-        ));
+        assert!(!MannWhitneyU::new(placebo.into_iter(), new_drug.into_iter()).test(Alpha::P05));
 
         // Example-2
         let usual_care = vec![8, 7, 6, 2, 5, 8, 7, 3];
         let new_program = vec![9, 9, 7, 8, 10, 9, 6];
-        assert!(mann_whitney_u(
-            usual_care.into_iter(),
-            new_program.into_iter(),
-            Alpha::P05
-        ));
+        assert!(
+            MannWhitneyU::new(usual_care.into_iter(), new_program.into_iter()).test(Alpha::P05)
+        );
 
         // Example-3
         let standard_therapy = vec![
@@ -269,10 +266,9 @@ mod tests {
         let new_therapy = vec![
             400, 250, 800, 1400, 8000, 7400, 1020, 6000, 920, 1420, 2700, 4200, 5200, 4100,
         ];
-        assert!(!mann_whitney_u(
-            standard_therapy.into_iter(),
-            new_therapy.into_iter(),
-            Alpha::P05
-        ));
+        assert!(
+            !MannWhitneyU::new(standard_therapy.into_iter(), new_therapy.into_iter())
+                .test(Alpha::P05)
+        );
     }
 }
