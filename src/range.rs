@@ -3,6 +3,7 @@ use crate::{ErrorKind, Result};
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 use std::iter;
+use std::ops::Sub;
 
 // TODO: Add `MaybeEmptyRange`
 
@@ -40,9 +41,13 @@ impl Range<f64> {
     pub fn middle(&self) -> f64 {
         (self.low + self.high) * 0.5
     }
-
-    pub fn width(&self) -> f64 {
-        self.high - self.low
+}
+impl<T> Range<T>
+where
+    T: Sub<Output = T> + Clone,
+{
+    pub fn width(&self) -> T {
+        self.high.clone() - self.low.clone()
     }
 }
 
@@ -63,6 +68,14 @@ impl<T> MinMax<T> {
 
     pub const fn max(&self) -> &T {
         &self.max
+    }
+}
+impl<T> MinMax<T>
+where
+    T: Sub<Output = T> + Clone,
+{
+    pub fn width(&self) -> T {
+        self.max.clone() - self.min.clone()
     }
 }
 impl<T> MinMax<T>

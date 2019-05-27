@@ -3,6 +3,68 @@ use crate::{ErrorKind, Result};
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 use std::fmt;
+use std::ops;
+
+macro_rules! impl_basic_ops {
+    ($ty:ident) => {
+        impl ops::Add for $ty {
+            type Output = $ty;
+
+            fn add(self, other: Self) -> Self::Output {
+                $ty::new(self.0 + other.0).unwrap_or_else(|e| {
+                    panic!("self={:?}, other={:?}, error={}", self.0, other.0, e)
+                })
+            }
+        }
+        impl ops::AddAssign for $ty {
+            fn add_assign(&mut self, other: Self) {
+                *self = *self + other;
+            }
+        }
+        impl ops::Sub for $ty {
+            type Output = $ty;
+
+            fn sub(self, other: Self) -> Self::Output {
+                $ty::new(self.0 - other.0).unwrap_or_else(|e| {
+                    panic!("self={:?}, other={:?}, error={}", self.0, other.0, e)
+                })
+            }
+        }
+        impl ops::SubAssign for $ty {
+            fn sub_assign(&mut self, other: Self) {
+                *self = *self - other;
+            }
+        }
+        impl ops::Mul for $ty {
+            type Output = $ty;
+
+            fn mul(self, other: Self) -> Self::Output {
+                $ty::new(self.0 * other.0).unwrap_or_else(|e| {
+                    panic!("self={:?}, other={:?}, error={}", self.0, other.0, e)
+                })
+            }
+        }
+        impl ops::MulAssign for $ty {
+            fn mul_assign(&mut self, other: Self) {
+                *self = *self * other;
+            }
+        }
+        impl ops::Div for $ty {
+            type Output = $ty;
+
+            fn div(self, other: Self) -> Self::Output {
+                $ty::new(self.0 / other.0).unwrap_or_else(|e| {
+                    panic!("self={:?}, other={:?}, error={}", self.0, other.0, e)
+                })
+            }
+        }
+        impl ops::DivAssign for $ty {
+            fn div_assign(&mut self, other: Self) {
+                *self = *self / other;
+            }
+        }
+    };
+}
 
 /// An floating point number that is neither infinite nor NaN.
 #[derive(Debug, Default, Clone, Copy, PartialEq, PartialOrd)]
@@ -46,6 +108,7 @@ impl fmt::Display for FiniteF64 {
         self.0.fmt(f)
     }
 }
+impl_basic_ops!(FiniteF64);
 
 /// An floating point number that is known not NaN.
 #[derive(Debug, Default, Clone, Copy, PartialEq, PartialOrd)]
@@ -89,3 +152,4 @@ impl fmt::Display for NonNanF64 {
         self.0.fmt(f)
     }
 }
+impl_basic_ops!(NonNanF64);
