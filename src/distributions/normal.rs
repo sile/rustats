@@ -1,6 +1,7 @@
 use super::{Cdf, Pdf};
 use rand::distributions::Distribution;
 use rand::{self, Rng};
+use rand_distr;
 use statrs::distribution::{Normal, Univariate as _};
 use std::f64::consts::PI;
 
@@ -8,7 +9,7 @@ use std::f64::consts::PI;
 pub struct StandardNormal;
 impl Distribution<f64> for StandardNormal {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> f64 {
-        rand::distributions::StandardNormal.sample(rng)
+        rand_distr::StandardNormal.sample(rng)
     }
 }
 impl Pdf<f64> for StandardNormal {
