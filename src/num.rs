@@ -63,6 +63,13 @@ macro_rules! impl_basic_ops {
                 *self = *self / other;
             }
         }
+        impl ops::Neg for $ty {
+            type Output = $ty;
+
+            fn neg(self) -> Self::Output {
+                $ty::new(-self.0).unwrap_or_else(|e| panic!("self={:?}, error={}", self, e))
+            }
+        }
     };
 }
 
