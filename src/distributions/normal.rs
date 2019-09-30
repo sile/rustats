@@ -1,9 +1,9 @@
 use super::{Cdf, Pdf};
+use libm;
 use rand::distributions::Distribution;
 use rand::{self, Rng};
 use rand_distr;
-use statrs::distribution::{Normal, Univariate as _};
-use std::f64::consts::PI;
+use std::f64::consts::{PI, SQRT_2};
 
 #[derive(Debug, Default, Clone, Copy)]
 pub struct StandardNormal;
@@ -28,8 +28,6 @@ impl Pdf<(f64, f64)> for StandardNormal {
 }
 impl Cdf<f64> for StandardNormal {
     fn cdf(&self, &x: &f64) -> f64 {
-        Normal::new(0.0, 1.0)
-            .unwrap_or_else(|e| unreachable!("{}", e))
-            .cdf(x)
+        0.5 * libm::erfc(-x / SQRT_2)
     }
 }

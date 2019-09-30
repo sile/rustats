@@ -15,8 +15,8 @@ travis-ci = {repository = "sile/rustats"}
 codecov = {repository = "sile/rustats"}
 
 [dependencies]
+libm = "0.1"
 rand = "0.7"
 rand_distr = "0.2"
 serde = { version = "1", features = ["derive"], optional = true }
-statrs = "0.11"
 trackable = "0.2"
