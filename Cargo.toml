@@ -1,6 +1,6 @@
 [package]
 name = "rustats"
-version = "0.0.10"
+version = "0.1.0"
 authors = ["Takeru Ohta <phjgt308@gmail.com>"]
 edition = "2018"
 description = "A statistical library"
@@ -11,7 +11,7 @@ categories = ["science"]
 license = "MIT"
 
 [badges]
-codecov = {repository = "sile/rustats"}
+coveralls = {repository = "sile/rustracing"}
 
 [dependencies]
 libm = "0.2"
