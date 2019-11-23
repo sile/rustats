@@ -1,8 +1,8 @@
-pub use self::normal::StandardNormal;
-
-pub mod kde;
-
-mod normal;
+use libm;
+use rand::distributions::Distribution;
+use rand::{self, Rng};
+use rand_distr;
+use std::f64::consts::{PI, SQRT_2};
 
 pub trait Pdf<T> {
     fn pdf(&self, x: &T) -> f64;
@@ -12,42 +12,29 @@ pub trait Cdf<T> {
     fn cdf(&self, x: &T) -> f64;
 }
 
-// This can be regarded as an unnormalized conditional probability distribution.
-#[derive(Debug)]
-pub struct FixY<D> {
-    inner: D,
-    y: f64,
-}
-impl<D> FixY<D>
-where
-    D: Pdf<(f64, f64)>,
-{
-    pub fn new(inner: D, y: f64) -> Self {
-        FixY { inner, y }
-    }
-
-    pub fn y(&self) -> f64 {
-        self.y
-    }
-
-    pub fn set_y(&mut self, y: f64) {
-        self.y = y;
-    }
-
-    pub fn inner(&self) -> &D {
-        &self.inner
-    }
-
-    pub fn inner_mut(&mut self) -> &mut D {
-        &mut self.inner
+#[derive(Debug, Default, Clone, Copy)]
+pub struct StandardNormal;
+impl Distribution<f64> for StandardNormal {
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> f64 {
+        rand_distr::StandardNormal.sample(rng)
     }
 }
-impl<D> Pdf<f64> for FixY<D>
-where
-    D: Pdf<(f64, f64)>,
-{
-    fn pdf(&self, &x: &f64) -> f64 {
-        // NOTE: incomplete PDF (The sum is less than 1.0)
-        self.inner.pdf(&(x, self.y))
+impl Pdf<f64> for StandardNormal {
+    fn pdf(&self, x: &f64) -> f64 {
+        let a = (2.0 * PI).sqrt();
+        let b = -x.powi(2) / 2.0;
+        b.exp() / a
+    }
+}
+impl Pdf<(f64, f64)> for StandardNormal {
+    fn pdf(&self, x: &(f64, f64)) -> f64 {
+        let a = 1.0 / (2.0 * PI);
+        let b = x.0 * x.0 + x.1 * x.1;
+        a * (-0.5 * b).exp()
+    }
+}
+impl Cdf<f64> for StandardNormal {
+    fn cdf(&self, &x: &f64) -> f64 {
+        0.5 * libm::erfc(-x / SQRT_2)
     }
 }
