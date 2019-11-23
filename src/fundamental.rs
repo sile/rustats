@@ -1,3 +1,6 @@
+//! Fundamental statistics.
+
+/// Calculates the standard deviation of the given numbers.
 pub fn stddev<I>(xs: I) -> f64
 where
     I: ExactSizeIterator<Item = f64> + Clone,
@@ -9,6 +12,7 @@ where
     var.sqrt()
 }
 
+/// Calculates the average of the given numbers.
 pub fn average<I>(xs: I) -> f64
 where
     I: Iterator<Item = f64>,

@@ -11,7 +11,6 @@ categories = ["science"]
 license = "MIT"
 
 [badges]
-travis-ci = {repository = "sile/rustats"}
 codecov = {repository = "sile/rustats"}
 
 [dependencies]

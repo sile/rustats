@@ -1,7 +1,9 @@
+//! Hypothesis testings.
 use crate::distributions::{Cdf as _, StandardNormal};
 use crate::fundamental::average;
 use std::cmp::Ordering;
 
+/// The alpha of Mann-Whitney U test.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Alpha {
     /// 0.01
@@ -17,6 +19,7 @@ enum Group {
     Y,
 }
 
+/// Mann-Whitney U test.
 #[derive(Debug)]
 pub struct MannWhitneyU {
     xn: usize,
@@ -24,6 +27,7 @@ pub struct MannWhitneyU {
     counts: Vec<(usize, usize)>,
 }
 impl MannWhitneyU {
+    /// Makes a new `MannWhitneyU` instance.
     pub fn new<X, Y, T>(xs: X, ys: Y) -> Self
     where
         X: Iterator<Item = T>,
@@ -57,6 +61,7 @@ impl MannWhitneyU {
         Self { xn, yn, counts }
     }
 
+    /// Tests whether there is a statistically significant difference between `xs` and `ys`.
     pub fn test(&self, alpha: Alpha) -> bool {
         if self.xn < 1 || self.yn < 1 {
             return false;
@@ -78,6 +83,9 @@ impl MannWhitneyU {
         }
     }
 
+    /// Returns `Ordering::Less` if `xs` is statistically less than `ys`, otherwise `Ordering::Greater`.
+    ///
+    /// If there is no statistically significant difference, this method returns `Ordering::Equal`.
     pub fn order(&self, alpha: Alpha) -> Ordering {
         if !self.test(alpha) {
             Ordering::Equal

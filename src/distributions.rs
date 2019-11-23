@@ -1,17 +1,23 @@
+//! Distributions.
 use libm;
 use rand::distributions::Distribution;
 use rand::{self, Rng};
 use rand_distr;
 use std::f64::consts::{PI, SQRT_2};
 
+/// Probability density function.
 pub trait Pdf<T> {
+    /// Returns the PDF of the given item.
     fn pdf(&self, x: &T) -> f64;
 }
 
+/// Cumulative distribution function.
 pub trait Cdf<T> {
+    /// Returns the CDF of the given item.
     fn cdf(&self, x: &T) -> f64;
 }
 
+/// Standard normal distribution.
 #[derive(Debug, Default, Clone, Copy)]
 pub struct StandardNormal;
 impl Distribution<f64> for StandardNormal {
