@@ -22,13 +22,13 @@ impl MannWhitneyU {
     where
         X: Iterator<Item = T>,
         Y: Iterator<Item = T>,
-        T: Ord,
+        T: PartialOrd,
     {
         let mut vs = xs
             .map(|x| (x, Group::X))
             .chain(ys.map(|y| (y, Group::Y)))
             .collect::<Vec<_>>();
-        vs.sort();
+        vs.sort_by(|a, b| a.partial_cmp(&b).unwrap_or(Ordering::Equal));
 
         let n = vs.len();
         let xn = vs.iter().filter(|t| t.1 == Group::X).count();
