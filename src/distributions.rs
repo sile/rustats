@@ -1,8 +1,6 @@
 //! Distributions.
-use libm;
 use rand::distributions::Distribution;
 use rand::{self, Rng};
-use rand_distr;
 use std::f64::consts::{PI, SQRT_2};
 
 /// Probability density function.
