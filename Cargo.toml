@@ -16,4 +16,4 @@ coveralls = {repository = "sile/rustracing"}
 [dependencies]
 libm = "0.2"
 rand = "0.7"
-rand_distr = "0.2"
+rand_distr = "0.3"
