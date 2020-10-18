@@ -58,14 +58,20 @@ impl MannWhitneyU {
     /// `alpha` must be a positive number.
     pub fn test(&self, alpha: f64) -> bool {
         assert!(alpha > 0.0);
+        self.p_value().map_or(false, |p| p < alpha)
+    }
 
+    /// Return the p-value that is the probability indicating there is a statistically significant difference between `xs` and `ys`.
+    ///
+    /// Note that if either `xs` or `ys` is empty, this method returns `None`.
+    pub fn p_value(&self) -> Option<f64> {
         if self.xn < 1 || self.yn < 1 {
-            return false;
+            None
+        } else {
+            let z = self.z();
+            let p = (1.0 - StandardNormal.cdf(&z.abs())) * 2.0;
+            Some(p)
         }
-
-        let z = self.z();
-        let p = (1.0 - StandardNormal.cdf(&z.abs())) * 2.0;
-        p < alpha
     }
 
     /// Returns `Ordering::Less` if `xs` is statistically less than `ys`, otherwise `Ordering::Greater`.
