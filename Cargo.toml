@@ -11,7 +11,7 @@ categories = ["science"]
 license = "MIT"
 
 [badges]
-coveralls = {repository = "sile/rustracing"}
+coveralls = {repository = "sile/rustats"}
 
 [dependencies]
 libm = "0.2"
