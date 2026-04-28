@@ -58,7 +58,7 @@ impl MannWhitneyU {
     /// `alpha` must be a positive number.
     pub fn test(&self, alpha: f64) -> bool {
         assert!(alpha > 0.0);
-        self.p_value().map_or(false, |p| p < alpha)
+        self.p_value().is_some_and(|p| p < alpha)
     }
 
     /// Return the p-value that is the probability indicating there is a statistically significant difference between `xs` and `ys`.

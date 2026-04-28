@@ -13,5 +13,5 @@ license = "MIT"
 
 [dependencies]
 libm = "0.2"
-rand = "0.7"
-rand_distr = "0.3"
+rand = "0.10"
+rand_distr = "0.6"

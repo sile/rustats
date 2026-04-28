@@ -1,5 +1,5 @@
 //! Distributions.
-use rand::distributions::Distribution;
+use rand::distr::Distribution;
 use rand::{self, Rng};
 use std::f64::consts::{PI, SQRT_2};
 
