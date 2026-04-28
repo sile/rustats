@@ -2,16 +2,14 @@
 name = "rustats"
 version = "0.1.2"
 authors = ["Takeru Ohta <phjgt308@gmail.com>"]
-edition = "2018"
+edition = "2024"
+rust-version = "1.88"
 description = "A statistical library"
 homepage = "https://github.com/sile/rustats"
 repository = "https://github.com/sile/rustats"
 readme = "README.md"
 categories = ["science"]
 license = "MIT"
-
-[badges]
-coveralls = {repository = "sile/rustats"}
 
 [dependencies]
 libm = "0.2"
